@@ -203,13 +203,18 @@ const MapView = () => {
           </div>
         </Card>
 
-        {/* Map Placeholder */}
+        {/* Map Placeholder - Ready for Integration */}
         <Card className="card-premium p-4">
-          <div className="h-64 bg-gradient-subtle rounded-lg flex items-center justify-center">
+          <div className="h-64 bg-gradient-subtle rounded-lg flex items-center justify-center relative">
             <div className="text-center">
-              <MapPin size={48} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">{t('map.mapPlaceholder')}</p>
-              <p className="text-sm text-muted-foreground mt-1">{t('map.mapIntegration')}</p>
+              <MapPin size={48} className="mx-auto text-primary mb-2" />
+              <p className="text-slate font-medium">{t('map.title')}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {locationEnabled 
+                  ? `${nearbyUsers.length} users nearby` 
+                  : 'Enable location to see nearby users'
+                }
+              </p>
             </div>
           </div>
         </Card>

@@ -1,14 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Calendar, Image, Plus, UserPlus, Upload, Clock, Activity } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import StatCard from '@/components/ui/StatCard';
 import QuickAction from '@/components/ui/QuickAction';
-import { currentUser, mockMeetups, mockUserMedia, mockFriends } from '@/data/mockData';
+import { mockMeetups, mockUserMedia, mockFriends } from '@/data/mockData';
 
 const Dashboard = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const currentUser = {
+    id: user?.id || '',
+    name: userProfile?.display_name || user?.user_metadata?.display_name || user?.email || 'User',
+    avatar: userProfile?.avatar_url || user?.user_metadata?.avatar_url || `https://i.pravatar.cc/100?seed=${user?.id}`,
+    friendsCount: 156, // This would come from actual data
+    meetupsCount: 12,  // This would come from actual data
+    photosCount: 24,   // This would come from actual data
+  };
 
   const upcomingMeetups = mockMeetups.filter(m => m.status === 'upcoming');
 

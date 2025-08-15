@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid, MessageCircle, UserMinus, UserPlus, UserCheck } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useFriendStatus } from '@/hooks/useFriendStatus';
+import PhotoUploadDialog from '@/components/dialogs/PhotoUploadDialog';
 
 const Profile = () => {
   const { t } = useLanguage();
   const { userId } = useParams();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const handleMessage = async (otherUserId: string) => {
     if (!currentUser) return;
@@ -152,7 +154,10 @@ const Profile = () => {
               />
             </div>
             {isOwnProfile && (
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-lg">
+              <button 
+                onClick={() => setUploadOpen(true)}
+                className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-lg hover:bg-primary-dark transition-colors"
+              >
                 <Camera size={16} className="text-white" />
               </button>
             )}
@@ -362,6 +367,15 @@ const Profile = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <PhotoUploadDialog 
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        onPhotoUploaded={() => {
+          // Refresh the page or refetch data if needed
+          setUploadOpen(false);
+        }}
+      />
     </div>
   );
 };
