@@ -96,6 +96,16 @@ const translations = {
       addNew: 'Add New Friend',
       searchPlaceholder: 'Search friends...',
     },
+    meetups: {
+      title: 'Meetups',
+      create: 'Create Meetup',
+      upcoming: 'Upcoming',
+      past: 'Past',
+      join: 'Join',
+      leave: 'Leave',
+      noUpcoming: 'No upcoming meetups',
+      noPast: 'No past meetups',
+    },
     nav: {
       dashboard: 'Dashboard',
       friends: 'Friends',
@@ -107,6 +117,12 @@ const translations = {
       profile: 'Profile',
       wall: 'Wall',
       create: 'Create',
+    },
+    profile: {
+      photos: 'Photos',
+      posts: 'Posts',
+      friends: 'Friends',
+      edit: 'Edit Profile',
     },
   },
   ru: {
@@ -195,6 +211,16 @@ const translations = {
       addNew: 'Добавить нового друга',
       searchPlaceholder: 'Поиск друзей...',
     },
+    meetups: {
+      title: 'Встречи',
+      create: 'Создать встречу',
+      upcoming: 'Предстоящие',
+      past: 'Прошедшие',
+      join: 'Присоединиться',
+      leave: 'Покинуть',
+      noUpcoming: 'Нет предстоящих встреч',
+      noPast: 'Нет прошедших встреч',
+    },
     nav: {
       dashboard: 'Главная',
       friends: 'Друзья',
@@ -206,6 +232,12 @@ const translations = {
       profile: 'Профиль',
       wall: 'Стена',
       create: 'Создать',
+    },
+    profile: {
+      photos: 'Фото',
+      posts: 'Посты',
+      friends: 'Друзья',
+      edit: 'Редактировать профиль',
     },
   }
 };

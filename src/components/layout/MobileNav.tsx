@@ -9,7 +9,8 @@ import {
   Image, 
   MessageSquare, 
   Megaphone,
-  User 
+  User,
+  Map
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -17,11 +18,11 @@ const MobileNav = () => {
   const { t } = useLanguage();
 
   const navItems = [
-    { to: '/', icon: Home, label: t('nav.dashboard'), color: 'text-primary' },
+    { to: '/', icon: Home, label: t('nav.dashboard'), color: 'text-slate-light' },
     { to: '/friends', icon: Users, label: t('nav.friends'), color: 'text-slate-light' },
+    { to: '/messages', icon: MessageSquare, label: t('nav.messages'), color: 'text-slate-light' },
     { to: '/create', icon: Plus, label: t('nav.create'), color: 'text-primary', isSpecial: true },
     { to: '/meetups', icon: Calendar, label: t('nav.meetups'), color: 'text-slate-light' },
-    { to: '/gallery', icon: Image, label: t('nav.gallery'), color: 'text-slate-light' },
   ];
 
   return (

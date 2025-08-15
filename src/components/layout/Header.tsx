@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import DesktopNav from './DesktopNav';
 
 const Header = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -31,6 +32,9 @@ const Header = () => {
             Meet
           </h1>
         </div>
+
+        {/* Desktop Navigation */}
+        <DesktopNav />
 
         {/* Actions */}
         <div className="flex items-center space-x-2">

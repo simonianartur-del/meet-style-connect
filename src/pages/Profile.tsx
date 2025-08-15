@@ -2,17 +2,29 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
-import { currentUser, mockFriends, mockUserMedia } from '@/data/mockData';
+import { useAuth } from '@/hooks/useAuth';
+import { mockFriends, mockUserMedia } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Profile = () => {
   const { t } = useLanguage();
   const { userId } = useParams();
+  const { user: currentUser } = useAuth();
   
   // Determine if this is the current user's profile or a friend's profile
-  const isOwnProfile = !userId || userId === currentUser.id;
-  const user = isOwnProfile ? currentUser : mockFriends.find(f => f.id === userId) || currentUser;
+  const isOwnProfile = !userId || userId === currentUser?.id;
+  const user = isOwnProfile ? {
+    id: currentUser?.id || '',
+    name: currentUser?.user_metadata?.display_name || currentUser?.email || 'User',
+    avatar: currentUser?.user_metadata?.avatar_url || `https://i.pravatar.cc/100?seed=${currentUser?.id}`,
+    location: 'San Francisco, CA', // This would come from profile table
+    bio: 'Love meeting new people and exploring new places! 🌟',
+    joinedDate: currentUser?.created_at || new Date().toISOString(),
+    photosCount: 24,
+    friendsCount: 156,
+    meetupsCount: 12,
+  } : mockFriends.find(f => f.id === userId) || mockFriends[0];
   
   const userMedia = mockUserMedia.filter(media => media.userId === user.id);
 
