@@ -22,7 +22,7 @@ const MobileNav = () => {
     { to: '/wall', icon: Megaphone, label: t('nav.wall'), color: 'text-slate-light' },
     { to: '/friends', icon: Users, label: t('nav.friends'), color: 'text-slate-light' },
     { to: '/messages', icon: MessageSquare, label: t('nav.messages'), color: 'text-slate-light' },
-    { to: '/create', icon: Plus, label: t('nav.create'), color: 'text-primary', isSpecial: true },
+    { to: '/map', icon: Map, label: t('nav.map'), color: 'text-primary', isSpecial: true },
   ];
 
   return (
