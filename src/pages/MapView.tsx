@@ -6,18 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { MapPin, Users, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
+import Map from '@/components/Map';
 
 interface UserLocation {
   id: string;
   username: string;
   display_name: string;
   avatar_url?: string;
-  location: [number, number]; // [longitude, latitude]
+  lat: number;
+  lng: number;
   location_enabled: boolean;
 }
 
 const MapView = () => {
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [nearbyUsers, setNearbyUsers] = useState<UserLocation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ const MapView = () => {
       if (data?.location) {
         // PostgreSQL POINT format: (longitude, latitude)
         const coords = String(data.location).replace(/[()]/g, '').split(',').map(Number);
-        setUserLocation([coords[0], coords[1]]);
+        setUserLocation({ lng: coords[0], lat: coords[1] });
       }
       
       setLocationEnabled(data?.location_enabled || false);
@@ -71,7 +73,8 @@ const MapView = () => {
           const coords = String(user.location).replace(/[()]/g, '').split(',').map(Number);
           return {
             ...user,
-            location: [coords[0], coords[1]] as [number, number],
+            lat: coords[1],
+            lng: coords[0],
             location_enabled: true
           };
         }) || [];
@@ -91,7 +94,7 @@ const MapView = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        setUserLocation([longitude, latitude]);
+        setUserLocation({ lng: longitude, lat: latitude });
         
         try {
           const { error } = await supabase
@@ -130,7 +133,7 @@ const MapView = () => {
         .from('profiles')
         .update({
           location_enabled: newEnabled,
-          location: newEnabled ? userLocation ? `(${userLocation[0]}, ${userLocation[1]})` : null : null
+          location: newEnabled ? userLocation ? `(${userLocation.lng}, ${userLocation.lat})` : null : null
         })
         .eq('id', user?.id);
 
@@ -197,25 +200,20 @@ const MapView = () => {
 
             {userLocation && (
               <div className="text-sm text-muted-foreground">
-                {t('map.currentLocation')}: {userLocation[1].toFixed(4)}, {userLocation[0].toFixed(4)}
+                {t('map.currentLocation')}: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
               </div>
             )}
           </div>
         </Card>
 
-        {/* Map Placeholder - Ready for Integration */}
+        {/* Interactive World Map */}
         <Card className="card-premium p-4">
-          <div className="h-64 bg-gradient-subtle rounded-lg flex items-center justify-center relative">
-            <div className="text-center">
-              <MapPin size={48} className="mx-auto text-primary mb-2" />
-              <p className="text-slate font-medium">{t('map.title')}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {locationEnabled 
-                  ? `${nearbyUsers.length} users nearby` 
-                  : 'Enable location to see nearby users'
-                }
-              </p>
-            </div>
+          <div className="h-96 rounded-lg overflow-hidden">
+            <Map 
+              userLocation={userLocation}
+              nearbyUsers={nearbyUsers}
+              className="h-full w-full"
+            />
           </div>
         </Card>
 
