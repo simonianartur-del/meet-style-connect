@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { AuthProvider } from "@/hooks/useAuth";
+import AuthWrapper from "@/components/AuthWrapper";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
 import Dashboard from "./pages/Dashboard";
@@ -13,37 +15,52 @@ import Gallery from "./pages/Gallery";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import Meetups from "./pages/Meetups";
+import Auth from "./pages/Auth";
+import Wall from "./pages/Wall";
+import Messages from "./pages/Messages";
+import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <div className="min-h-screen bg-gradient-to-br from-background via-background-secondary to-background-tertiary">
-            <Header />
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/friends" element={<Friends />} />
-              <Route path="/create" element={<CreateMeetup />} />
-              <Route path="/discover" element={<Discover />} />
-              <Route path="/meetups" element={<Meetups />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/:userId" element={<Profile />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <MobileNav />
-          </div>
-        </BrowserRouter>
+    <AuthProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="min-h-screen bg-gradient-to-br from-background via-background-secondary to-background-tertiary">
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/*" element={
+                  <AuthWrapper>
+                    <Header />
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/friends" element={<Friends />} />
+                      <Route path="/create" element={<CreateMeetup />} />
+                      <Route path="/discover" element={<Discover />} />
+                      <Route path="/meetups" element={<Meetups />} />
+                      <Route path="/gallery" element={<Gallery />} />
+                      <Route path="/wall" element={<Wall />} />
+                      <Route path="/messages" element={<Messages />} />
+                      <Route path="/map" element={<MapView />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/profile/:userId" element={<Profile />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                    <MobileNav />
+                  </AuthWrapper>
+                } />
+              </Routes>
+            </div>
+          </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>
-  </QueryClientProvider>
+  </AuthProvider>
+</QueryClientProvider>
 );
 
 export default App;

@@ -22,6 +22,9 @@ const translations = {
       uploadPhoto: 'Upload Photo',
       noUpcomingMeetups: 'No upcoming meetups',
       createFirst: 'Create your first meetup!',
+      subtitle: 'Welcome back!',
+      quickActions: 'Quick Actions',
+      recentActivity: 'Recent Activity',
     },
     auth: {
       login: 'Login',
@@ -101,6 +104,8 @@ const translations = {
       gallery: 'Gallery',
       map: 'Map',
       profile: 'Profile',
+      wall: 'Wall',
+      create: 'Create',
     },
   },
   ru: {
@@ -115,6 +120,9 @@ const translations = {
       uploadPhoto: 'Загрузить фото',
       noUpcomingMeetups: 'Нет предстоящих встреч',
       createFirst: 'Создайте свою первую встречу!',
+      subtitle: 'Добро пожаловать обратно!',
+      quickActions: 'Быстрые действия',
+      recentActivity: 'Недавняя активность',
     },
     auth: {
       login: 'Войти',
@@ -194,6 +202,8 @@ const translations = {
       gallery: 'Галерея',
       map: 'Карта',
       profile: 'Профиль',
+      wall: 'Стена',
+      create: 'Создать',
     },
   }
 };
