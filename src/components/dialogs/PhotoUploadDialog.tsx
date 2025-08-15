@@ -19,9 +19,10 @@ interface PhotoUploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPhotoUploaded: () => void;
+  isProfilePhoto?: boolean; // New prop to indicate if this is for profile picture
 }
 
-const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded }: PhotoUploadDialogProps) => {
+const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded, isProfilePhoto = false }: PhotoUploadDialogProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
@@ -50,33 +51,47 @@ const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded }: PhotoUploadD
     try {
       // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const bucketName = isProfilePhoto ? 'avatars' : 'media';
+      const fileName = isProfilePhoto ? `${user.id}.${fileExt}` : `${user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(fileName, file);
+        .from(bucketName)
+        .upload(fileName, file, {
+          upsert: isProfilePhoto // Overwrite existing avatar if it's a profile photo
+        });
 
       if (uploadError) throw uploadError;
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('media')
+        .from(bucketName)
         .getPublicUrl(fileName);
 
-      // Save to database
-      const { error: dbError } = await supabase
-        .from('user_media')
-        .insert({
-          user_id: user.id,
-          url: urlData.publicUrl,
-          media_type: 'image',
-          caption: caption || null,
-          is_private: false
-        });
+      if (isProfilePhoto) {
+        // Update profile avatar_url
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: urlData.publicUrl })
+          .eq('id', user.id);
 
-      if (dbError) throw dbError;
+        if (profileError) throw profileError;
+        toast.success('Profile picture updated successfully!');
+      } else {
+        // Save to user_media for gallery
+        const { error: dbError } = await supabase
+          .from('user_media')
+          .insert({
+            user_id: user.id,
+            url: urlData.publicUrl,
+            media_type: 'image',
+            caption: caption || null,
+            is_private: false
+          });
 
-      toast.success('Photo uploaded successfully!');
+        if (dbError) throw dbError;
+        toast.success('Photo uploaded successfully!');
+      }
+
       onPhotoUploaded();
       onOpenChange(false);
       
@@ -85,7 +100,7 @@ const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded }: PhotoUploadD
       setCaption('');
       setPreview(null);
     } catch (error) {
-      toast.error('Error uploading photo');
+      toast.error(isProfilePhoto ? 'Error updating profile picture' : 'Error uploading photo');
       console.error('Upload error:', error);
     } finally {
       setLoading(false);
@@ -98,7 +113,7 @@ const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded }: PhotoUploadD
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Upload size={20} className="text-primary" />
-            <span>{t('gallery.upload')}</span>
+            <span>{isProfilePhoto ? 'Update Profile Picture' : t('gallery.upload')}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -150,17 +165,19 @@ const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded }: PhotoUploadD
             </div>
           </div>
 
-          {/* Caption */}
-          <div className="space-y-2">
-            <Label htmlFor="caption">Caption (optional)</Label>
-            <Textarea
-              id="caption"
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="Write a caption for your photo..."
-              className="resize-none"
-            />
-          </div>
+          {/* Caption - only show for gallery photos */}
+          {!isProfilePhoto && (
+            <div className="space-y-2">
+              <Label htmlFor="caption">Caption (optional)</Label>
+              <Textarea
+                id="caption"
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Write a caption for your photo..."
+                className="resize-none"
+              />
+            </div>
+          )}
 
           {/* Upload Button */}
           <Button 
@@ -168,7 +185,7 @@ const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded }: PhotoUploadD
             disabled={!file || loading}
             className="btn-premium w-full"
           >
-            {loading ? 'Uploading...' : 'Upload Photo'}
+            {loading ? 'Uploading...' : (isProfilePhoto ? 'Update Profile Picture' : 'Upload Photo')}
           </Button>
         </div>
       </DialogContent>

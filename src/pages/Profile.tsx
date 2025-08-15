@@ -371,9 +371,11 @@ const Profile = () => {
       <PhotoUploadDialog 
         open={uploadOpen}
         onOpenChange={setUploadOpen}
+        isProfilePhoto={true}
         onPhotoUploaded={() => {
           // Refresh the page or refetch data if needed
           setUploadOpen(false);
+          window.location.reload(); // Refresh to show new profile picture
         }}
       />
     </div>
