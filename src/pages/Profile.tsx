@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,7 @@ const Profile = () => {
   const { t } = useLanguage();
   const { userId } = useParams();
   const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
   
   // Determine if this is the current user's profile or a friend's profile
   const isOwnProfile = !userId || userId === currentUser?.id;
@@ -91,7 +92,11 @@ const Profile = () => {
                 <Users size={18} className="mr-2" />
                 Add Friend
               </Button>
-              <Button variant="outline" className="btn-ghost">
+              <Button 
+                variant="outline" 
+                className="btn-ghost"
+                onClick={() => navigate('/messages')}
+              >
                 Message
               </Button>
             </div>

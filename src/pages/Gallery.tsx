@@ -4,10 +4,12 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { mockUserMedia, mockFriends, currentUser } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PhotoUploadDialog from '@/components/dialogs/PhotoUploadDialog';
 
 const Gallery = () => {
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const myPhotos = mockUserMedia.filter(media => media.userId === currentUser.id);
   const sharedPhotos = mockUserMedia.filter(media => media.userId !== currentUser.id);
@@ -100,7 +102,10 @@ const Gallery = () => {
           <h1 className="text-2xl font-bold text-slate">{t('gallery.title')}</h1>
           
           {/* Upload Button */}
-          <Button className="btn-premium">
+          <Button 
+            className="btn-premium"
+            onClick={() => setUploadOpen(true)}
+          >
             <Upload size={18} className="mr-2" />
             {t('gallery.upload')}
           </Button>
@@ -191,6 +196,15 @@ const Gallery = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <PhotoUploadDialog 
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        onPhotoUploaded={() => {
+          // Refresh gallery data here when we implement real data
+          console.log('Photo uploaded successfully');
+        }}
+      />
     </div>
   );
 };

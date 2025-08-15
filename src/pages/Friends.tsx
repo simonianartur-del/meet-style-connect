@@ -5,11 +5,13 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { mockFriends } from '@/data/mockData';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import AddFriendDialog from '@/components/dialogs/AddFriendDialog';
 
 const Friends = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [addFriendOpen, setAddFriendOpen] = useState(false);
 
   const filteredFriends = mockFriends.filter(friend =>
     friend.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -35,7 +37,10 @@ const Friends = () => {
           </div>
 
           {/* Add Friend Button */}
-          <Button className="btn-premium">
+          <Button 
+            className="btn-premium"
+            onClick={() => setAddFriendOpen(true)}
+          >
             <UserPlus size={18} className="mr-2" />
             {t('friends.addNew')}
           </Button>
@@ -107,6 +112,11 @@ const Friends = () => {
           </div>
         </div>
       </div>
+      
+      <AddFriendDialog 
+        open={addFriendOpen}
+        onOpenChange={setAddFriendOpen}
+      />
     </div>
   );
 };

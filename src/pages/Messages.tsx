@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { MessageCircle, Plus, User, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import NewChatDialog from '@/components/dialogs/NewChatDialog';
 
 interface Chat {
   id: string;
@@ -46,6 +47,7 @@ const Messages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [newChatOpen, setNewChatOpen] = useState(false);
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -161,7 +163,10 @@ const Messages = () => {
       <div className="bg-gradient-subtle px-4 py-6 mb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-slate">{t('messages.title')}</h1>
-          <Button className="btn-premium">
+          <Button 
+            className="btn-premium"
+            onClick={() => setNewChatOpen(true)}
+          >
             <Plus size={18} className="mr-2" />
             {t('messages.newChat')}
           </Button>
@@ -261,6 +266,12 @@ const Messages = () => {
           </div>
         )}
       </div>
+      
+      <NewChatDialog 
+        open={newChatOpen}
+        onOpenChange={setNewChatOpen}
+        onChatCreated={fetchChats}
+      />
     </div>
   );
 };

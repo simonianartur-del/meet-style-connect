@@ -20,6 +20,7 @@ import Wall from "./pages/Wall";
 import Messages from "./pages/Messages";
 import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
                       <Route path="/map" element={<MapView />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/profile/:userId" element={<Profile />} />
+                      <Route path="/settings" element={<Settings />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                     <MobileNav />

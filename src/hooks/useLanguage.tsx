@@ -124,6 +124,27 @@ const translations = {
       friends: 'Friends',
       edit: 'Edit Profile',
     },
+    gallery: {
+      title: 'Gallery',
+      upload: 'Upload Photo',
+      myPhotos: 'My Photos',
+      sharedPhotos: 'Shared Photos',
+    },
+    notifications: {
+      title: 'Notifications',
+      noNotifications: 'No notifications',
+      markAllRead: 'Mark all as read',
+    },
+    settings: {
+      title: 'Settings',
+      privacy: 'Privacy Settings',
+      makePhotosPrivate: 'Make photos private',
+      makeFriendsPrivate: 'Make friends list private',
+      makePostsPrivate: 'Make posts private',
+      account: 'Account Settings',
+      save: 'Save Changes',
+      saved: 'Settings saved successfully',
+    },
   },
   ru: {
     dashboard: {
@@ -238,6 +259,27 @@ const translations = {
       posts: 'Посты',
       friends: 'Друзья',
       edit: 'Редактировать профиль',
+    },
+    gallery: {
+      title: 'Галерея',
+      upload: 'Загрузить фото',
+      myPhotos: 'Мои фото',
+      sharedPhotos: 'Общие фото',
+    },
+    notifications: {
+      title: 'Уведомления',
+      noNotifications: 'Нет уведомлений',
+      markAllRead: 'Отметить все как прочитанные',
+    },
+    settings: {
+      title: 'Настройки',
+      privacy: 'Настройки приватности',
+      makePhotosPrivate: 'Сделать фото приватными',
+      makeFriendsPrivate: 'Сделать список друзей приватным',
+      makePostsPrivate: 'Сделать посты приватными',
+      account: 'Настройки аккаунта',
+      save: 'Сохранить изменения',
+      saved: 'Настройки успешно сохранены',
     },
   }
 };

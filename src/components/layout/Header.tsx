@@ -1,5 +1,6 @@
-import React from 'react';
-import { Bell, Globe, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, Globe, LogOut, Settings } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -11,10 +12,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import DesktopNav from './DesktopNav';
+import NotificationsDialog from '@/components/dialogs/NotificationsDialog';
 
 const Header = () => {
   const { language, setLanguage, t } = useLanguage();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
@@ -52,7 +56,12 @@ const Header = () => {
           </Button>
 
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative interactive-bounce">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="relative interactive-bounce"
+            onClick={() => setNotificationsOpen(true)}
+          >
             <Bell size={18} />
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full text-xs flex items-center justify-center">
               3
@@ -72,6 +81,10 @@ const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <Settings className="mr-2 h-4 w-4" />
+                {t('settings.title')}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={signOut} className="text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 {t('auth.logout')}
@@ -80,6 +93,11 @@ const Header = () => {
           </DropdownMenu>
         </div>
       </div>
+      
+      <NotificationsDialog 
+        open={notificationsOpen} 
+        onOpenChange={setNotificationsOpen} 
+      />
     </header>
   );
 };
