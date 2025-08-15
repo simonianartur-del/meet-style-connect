@@ -1,17 +1,79 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid } from 'lucide-react';
+import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid, MessageCircle } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { mockFriends, mockUserMedia } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
 
 const Profile = () => {
   const { t } = useLanguage();
   const { userId } = useParams();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
+
+  const handleMessage = async (otherUserId: string) => {
+    if (!currentUser) return;
+    
+    try {
+      // Check if chat already exists
+      const { data: existingChats } = await supabase
+        .from('chat_participants')
+        .select('chat_id, chats!inner(is_group)')
+        .eq('user_id', currentUser.id)
+        .eq('chats.is_group', false);
+
+      let chatId = null;
+
+      if (existingChats) {
+        for (const chat of existingChats) {
+          const { data: participants } = await supabase
+            .from('chat_participants')
+            .select('user_id')
+            .eq('chat_id', chat.chat_id);
+          
+          if (participants?.some(p => p.user_id === otherUserId)) {
+            chatId = chat.chat_id;
+            break;
+          }
+        }
+      }
+
+      if (!chatId) {
+        // Create new chat
+        const { data: newChat, error: chatError } = await supabase
+          .from('chats')
+          .insert({
+            is_group: false,
+            created_by: currentUser.id,
+          })
+          .select()
+          .single();
+
+        if (chatError) throw chatError;
+
+        // Add participants
+        const { error: participantError } = await supabase
+          .from('chat_participants')
+          .insert([
+            { chat_id: newChat.id, user_id: currentUser.id },
+            { chat_id: newChat.id, user_id: otherUserId },
+          ]);
+
+        if (participantError) throw participantError;
+        chatId = newChat.id;
+      }
+
+      navigate('/messages');
+      toast.success('Chat opened successfully');
+    } catch (error) {
+      console.error('Error opening chat:', error);
+      toast.error('Failed to open chat');
+    }
+  };
   
   // Determine if this is the current user's profile or a friend's profile
   const isOwnProfile = !userId || userId === currentUser?.id;
@@ -95,8 +157,9 @@ const Profile = () => {
               <Button 
                 variant="outline" 
                 className="btn-ghost"
-                onClick={() => navigate('/messages')}
+                onClick={() => handleMessage(user.id)}
               >
+                <MessageCircle size={16} className="mr-2" />
                 Message
               </Button>
             </div>

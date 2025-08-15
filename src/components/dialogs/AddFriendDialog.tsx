@@ -47,6 +47,7 @@ const AddFriendDialog = ({ open, onOpenChange }: AddFriendDialogProps) => {
         .from('profiles')
         .select('id, username, display_name, avatar_url')
         .neq('id', user?.id)
+        .order('display_name')
         .limit(20);
 
       if (error) throw error;
@@ -94,10 +95,14 @@ const AddFriendDialog = ({ open, onOpenChange }: AddFriendDialogProps) => {
     }
   };
 
-  const filteredUsers = users.filter(u =>
-    u.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = users.filter(u => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      u.username?.toLowerCase().includes(query) ||
+      u.display_name?.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

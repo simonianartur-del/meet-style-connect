@@ -19,10 +19,10 @@ const MobileNav = () => {
 
   const navItems = [
     { to: '/', icon: Home, label: t('nav.dashboard'), color: 'text-slate-light' },
+    { to: '/wall', icon: Megaphone, label: t('nav.wall'), color: 'text-slate-light' },
     { to: '/friends', icon: Users, label: t('nav.friends'), color: 'text-slate-light' },
     { to: '/messages', icon: MessageSquare, label: t('nav.messages'), color: 'text-slate-light' },
     { to: '/create', icon: Plus, label: t('nav.create'), color: 'text-primary', isSpecial: true },
-    { to: '/meetups', icon: Calendar, label: t('nav.meetups'), color: 'text-slate-light' },
   ];
 
   return (
