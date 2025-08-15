@@ -52,7 +52,7 @@ const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded, isProfilePhoto
       // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const bucketName = isProfilePhoto ? 'avatars' : 'media';
-      const fileName = isProfilePhoto ? `${user.id}.${fileExt}` : `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = isProfilePhoto ? `${user.id}/${user.id}.${fileExt}` : `${user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from(bucketName)
