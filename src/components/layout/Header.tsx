@@ -1,11 +1,19 @@
 import React from 'react';
-import { Bell, Globe } from 'lucide-react';
+import { Bell, Globe, LogOut } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { currentUser } from '@/data/mockData';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const { language, setLanguage, t } = useLanguage();
+  const { user, signOut } = useAuth();
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
@@ -48,13 +56,24 @@ const Header = () => {
           </Button>
 
           {/* User Avatar */}
-          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-border-light interactive">
-            <img 
-              src={currentUser.avatar} 
-              alt={currentUser.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.display_name || user?.email} />
+                  <AvatarFallback>
+                    {(user?.user_metadata?.display_name || user?.email || 'U').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={signOut} className="text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                {t('auth.logout')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

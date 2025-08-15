@@ -28,6 +28,7 @@ const translations = {
     },
     auth: {
       login: 'Login',
+      logout: 'Logout',
       signup: 'Sign Up',
       email: 'Email',
       password: 'Password',
@@ -126,6 +127,7 @@ const translations = {
     },
     auth: {
       login: 'Войти',
+      logout: 'Выйти',
       signup: 'Регистрация',
       email: 'Электронная почта',
       password: 'Пароль',
