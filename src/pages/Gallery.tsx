@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, Heart, MessageCircle, Share, Grid, List } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { mockUserMedia, mockFriends, currentUser } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,14 +10,49 @@ import PhotoUploadDialog from '@/components/dialogs/PhotoUploadDialog';
 
 const Gallery = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [userMedia, setUserMedia] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const myPhotos = mockUserMedia.filter(media => media.userId === currentUser.id);
-  const sharedPhotos = mockUserMedia.filter(media => media.userId !== currentUser.id);
+  useEffect(() => {
+    fetchUserMedia();
+  }, [user]);
 
-  const MediaCard = ({ media, isGrid = true }: { media: typeof mockUserMedia[0], isGrid: boolean }) => {
-    const user = media.userId === currentUser.id ? currentUser : mockFriends.find(f => f.id === media.userId);
+  const fetchUserMedia = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_media')
+        .select(`
+          *,
+          profiles!user_media_user_id_fkey(username, display_name, avatar_url)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setUserMedia(data || []);
+    } catch (error) {
+      console.error('Error fetching user media:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const myPhotos = userMedia.filter(media => media.user_id === user?.id);
+  const sharedPhotos = userMedia.filter(media => media.user_id !== user?.id);
+
+  const MediaCard = ({ media, isGrid = true }: { media: any, isGrid: boolean }) => {
+    const mediaUser = media.user_id === user?.id ? {
+      name: user?.user_metadata?.display_name || user?.email,
+      avatar: user?.user_metadata?.avatar_url || `https://i.pravatar.cc/100?seed=${user?.id}`
+    } : {
+      name: media.profiles?.display_name || media.profiles?.username,
+      avatar: media.profiles?.avatar_url || `https://i.pravatar.cc/100?seed=${media.user_id}`
+    };
     
     if (isGrid) {
       return (
@@ -31,11 +68,11 @@ const Gallery = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Heart size={16} className="text-white" />
-                    <span className="text-sm">{media.likes}</span>
+                    <span className="text-sm">{media.likes_count || 0}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <MessageCircle size={16} className="text-white" />
-                    <span className="text-sm">{media.comments.length}</span>
+                    <span className="text-sm">0</span>
                   </div>
                 </div>
               </div>
@@ -51,14 +88,14 @@ const Gallery = () => {
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <img 
-              src={user?.avatar} 
-              alt={user?.name}
+              src={mediaUser?.avatar} 
+              alt={mediaUser?.name}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-slate">{user?.name}</h3>
-            <p className="text-xs text-muted-foreground">{new Date(media.uploadedAt).toLocaleDateString()}</p>
+            <h3 className="font-semibold text-slate">{mediaUser?.name}</h3>
+            <p className="text-xs text-muted-foreground">{new Date(media.created_at).toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -79,11 +116,11 @@ const Gallery = () => {
           <div className="flex items-center space-x-4">
             <button className="flex items-center space-x-1 text-destructive hover:text-destructive/80 transition-colors">
               <Heart size={18} />
-              <span className="text-sm">{media.likes}</span>
+              <span className="text-sm">{media.likes_count || 0}</span>
             </button>
             <button className="flex items-center space-x-1 text-slate-light hover:text-slate transition-colors">
               <MessageCircle size={18} />
-              <span className="text-sm">{media.comments.length}</span>
+              <span className="text-sm">0</span>
             </button>
           </div>
           <button className="text-slate-light hover:text-slate transition-colors">
@@ -201,8 +238,7 @@ const Gallery = () => {
         open={uploadOpen}
         onOpenChange={setUploadOpen}
         onPhotoUploaded={() => {
-          // Refresh gallery data here when we implement real data
-          console.log('Photo uploaded successfully');
+          fetchUserMedia();
         }}
       />
     </div>

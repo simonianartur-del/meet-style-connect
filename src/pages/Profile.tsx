@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid, MessageCircle } from 'lucide-react';
+import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid, MessageCircle, UserMinus, UserPlus, UserCheck } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { mockFriends, mockUserMedia } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { useFriendStatus } from '@/hooks/useFriendStatus';
 
 const Profile = () => {
   const { t } = useLanguage();
@@ -77,6 +78,9 @@ const Profile = () => {
   
   // Determine if this is the current user's profile or a friend's profile
   const isOwnProfile = !userId || userId === currentUser?.id;
+  const targetUserId = userId || currentUser?.id || '';
+  const { status: friendStatus, loading: friendLoading, sendFriendRequest, removeFriend, acceptFriendRequest } = useFriendStatus(targetUserId);
+  
   const user = isOwnProfile ? {
     id: currentUser?.id || '',
     name: currentUser?.user_metadata?.display_name || currentUser?.email || 'User',
@@ -88,6 +92,48 @@ const Profile = () => {
     friendsCount: 156,
     meetupsCount: 12,
   } : mockFriends.find(f => f.id === userId) || mockFriends[0];
+
+  const handleFriendAction = async () => {
+    if (friendStatus === 'none') {
+      const success = await sendFriendRequest();
+      if (success) {
+        toast.success('Friend request sent!');
+      } else {
+        toast.error('Failed to send friend request');
+      }
+    } else if (friendStatus === 'friends') {
+      const success = await removeFriend();
+      if (success) {
+        toast.success('Friend removed');
+      } else {
+        toast.error('Failed to remove friend');
+      }
+    } else if (friendStatus === 'pending_received') {
+      const success = await acceptFriendRequest();
+      if (success) {
+        toast.success('Friend request accepted!');
+      } else {
+        toast.error('Failed to accept friend request');
+      }
+    }
+  };
+
+  const getFriendButtonContent = () => {
+    if (friendLoading) return { icon: Users, text: 'Loading...' };
+    
+    switch (friendStatus) {
+      case 'friends':
+        return { icon: UserMinus, text: 'Remove Friend' };
+      case 'pending_sent':
+        return { icon: UserCheck, text: 'Request Sent' };
+      case 'pending_received':
+        return { icon: UserCheck, text: 'Accept Request' };
+      default:
+        return { icon: UserPlus, text: 'Add Friend' };
+    }
+  };
+
+  const friendButtonContent = getFriendButtonContent();
   
   const userMedia = mockUserMedia.filter(media => media.userId === user.id);
 
@@ -150,9 +196,13 @@ const Profile = () => {
             </Button>
           ) : (
             <div className="flex space-x-3">
-              <Button className="btn-premium flex-1">
-                <Users size={18} className="mr-2" />
-                Add Friend
+              <Button 
+                className="btn-premium flex-1"
+                onClick={handleFriendAction}
+                disabled={friendLoading || friendStatus === 'pending_sent'}
+              >
+                <friendButtonContent.icon size={18} className="mr-2" />
+                {friendButtonContent.text}
               </Button>
               <Button 
                 variant="outline" 
