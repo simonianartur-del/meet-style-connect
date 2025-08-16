@@ -49,9 +49,15 @@ const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDialogProps
         .order('display_name')
         .limit(20);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+      
+      console.log('Fetched users:', data);
       setUsers(data || []);
     } catch (error) {
+      console.error('Error in fetchUsers:', error);
       toast.error('Error fetching users');
     }
   };
@@ -61,26 +67,30 @@ const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDialogProps
     
     setLoading(true);
     try {
-      // Check if chat already exists
-      const { data: existingChat } = await supabase
+      // Check if chat already exists between these users
+      const { data: userChats } = await supabase
         .from('chat_participants')
-        .select('chat_id, chats!inner(*)')
-        .eq('user_id', user.id)
-        .eq('chats.is_group', false);
+        .select('chat_id')
+        .eq('user_id', user.id);
 
-      if (existingChat) {
-        const existingDirectChat = existingChat.find(async (chat) => {
-          const { data: participants } = await supabase
+      if (userChats && userChats.length > 0) {
+        // Check each chat to see if it contains the other user
+        for (const userChat of userChats) {
+          const { data: chatParticipants } = await supabase
             .from('chat_participants')
-            .select('user_id')
-            .eq('chat_id', chat.chat_id);
-          
-          return participants?.some(p => p.user_id === otherUserId);
-        });
+            .select('user_id, chats!inner(is_group)')
+            .eq('chat_id', userChat.chat_id)
+            .eq('chats.is_group', false);
 
-        if (existingDirectChat) {
-          toast.error('Chat already exists with this user');
-          return;
+          if (chatParticipants && chatParticipants.length === 2) {
+            const participantIds = chatParticipants.map(p => p.user_id);
+            if (participantIds.includes(user.id) && participantIds.includes(otherUserId)) {
+              toast.success('Opening existing chat');
+              onChatCreated();
+              onOpenChange(false);
+              return;
+            }
+          }
         }
       }
 
@@ -94,7 +104,10 @@ const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDialogProps
         .select()
         .single();
 
-      if (chatError) throw chatError;
+      if (chatError) {
+        console.error('Chat creation error:', chatError);
+        throw chatError;
+      }
 
       // Add participants
       const { error: participantError } = await supabase
@@ -104,12 +117,16 @@ const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDialogProps
           { chat_id: newChat.id, user_id: otherUserId },
         ]);
 
-      if (participantError) throw participantError;
+      if (participantError) {
+        console.error('Participant addition error:', participantError);
+        throw participantError;
+      }
 
       toast.success('Chat created successfully');
       onChatCreated();
       onOpenChange(false);
     } catch (error) {
+      console.error('Error creating chat:', error);
       toast.error('Error creating chat');
     } finally {
       setLoading(false);
@@ -182,7 +199,12 @@ const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDialogProps
             {filteredUsers.length === 0 && (
               <div className="text-center py-8">
                 <User size={48} className="mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">No users found</p>
+                <p className="text-muted-foreground">
+                  {users.length === 0 
+                    ? "No other users available. Create more accounts to test messaging." 
+                    : "No users match your search."
+                  }
+                </p>
               </div>
             )}
           </div>

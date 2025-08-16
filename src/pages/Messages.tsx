@@ -270,7 +270,10 @@ const Messages = () => {
       <NewChatDialog 
         open={newChatOpen}
         onOpenChange={setNewChatOpen}
-        onChatCreated={fetchChats}
+        onChatCreated={() => {
+          fetchChats();
+          setNewChatOpen(false);
+        }}
       />
     </div>
   );
