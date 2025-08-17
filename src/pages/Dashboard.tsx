@@ -13,10 +13,16 @@ const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [stats, setStats] = useState({
+    friendsCount: 0,
+    meetupsCount: 0,
+    photosCount: 0
+  });
 
   useEffect(() => {
     if (user) {
       fetchUserProfile();
+      fetchUserStats();
     }
   }, [user]);
 
@@ -35,13 +41,44 @@ const Dashboard = () => {
     }
   };
 
+  const fetchUserStats = async () => {
+    if (!user?.id) return;
+
+    try {
+      // Get friends count (both sent and received accepted friendships)
+      const { count: friendsCount } = await supabase
+        .from('friends')
+        .select('*', { count: 'exact', head: true })
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .eq('status', 'accepted');
+
+      // Get user's meetups count (where they are the organizer)
+      const { count: meetupsCount } = await supabase
+        .from('meetups')
+        .select('*', { count: 'exact', head: true })
+        .eq('organizer_id', user.id);
+
+      // Get user's photos count
+      const { count: photosCount } = await supabase
+        .from('user_media')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      setStats({
+        friendsCount: friendsCount || 0,
+        meetupsCount: meetupsCount || 0,
+        photosCount: photosCount || 0
+      });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    }
+  };
+
   const currentUser = {
     id: user?.id || '',
     name: userProfile?.display_name || user?.user_metadata?.display_name || user?.email || 'User',
     avatar: userProfile?.avatar_url || user?.user_metadata?.avatar_url || `https://i.pravatar.cc/100?seed=${user?.id}`,
-    friendsCount: 156, // This would come from actual data
-    meetupsCount: 12,  // This would come from actual data
-    photosCount: 24,   // This would come from actual data
+    ...stats
   };
 
   const upcomingMeetups = mockMeetups.filter(m => m.status === 'upcoming');
