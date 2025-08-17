@@ -46,13 +46,15 @@ export const useFriendStatus = (targetUserId: string) => {
     if (!user || !targetUserId) return false;
 
     try {
-      const { error } = await supabase
+      const { data: friendRequest, error } = await supabase
         .from('friends')
         .insert({
           user_id: user.id,
           friend_id: targetUserId,
           status: 'pending'
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -64,7 +66,10 @@ export const useFriendStatus = (targetUserId: string) => {
           type: 'friend_request',
           title: 'New Friend Request',
           message: `${user.user_metadata?.display_name || user.email} sent you a friend request`,
-          data: { from_user_id: user.id }
+          data: { 
+            from_user_id: user.id,
+            friend_request_id: friendRequest.id
+          }
         });
 
       setStatus('pending_sent');

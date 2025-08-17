@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Globe, LogOut, Settings, User } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
@@ -19,6 +20,29 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+    }
+  }, [user]);
+
+  const fetchUnreadCount = async () => {
+    if (!user) return;
+    
+    try {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+      
+      setUnreadCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  };
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
@@ -63,9 +87,11 @@ const Header = () => {
             onClick={() => setNotificationsOpen(true)}
           >
             <Bell size={18} />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full text-xs flex items-center justify-center">
-              3
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full text-xs flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
           </Button>
 
           {/* User Avatar */}
@@ -100,7 +126,8 @@ const Header = () => {
       
       <NotificationsDialog 
         open={notificationsOpen} 
-        onOpenChange={setNotificationsOpen} 
+        onOpenChange={setNotificationsOpen}
+        onUpdate={fetchUnreadCount}
       />
     </header>
   );

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Check, X, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Notification {
@@ -26,9 +26,10 @@ interface Notification {
 interface NotificationsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onUpdate?: () => void;
 }
 
-const NotificationsDialog = ({ open, onOpenChange }: NotificationsDialogProps) => {
+const NotificationsDialog = ({ open, onOpenChange, onUpdate }: NotificationsDialogProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -56,6 +57,56 @@ const NotificationsDialog = ({ open, onOpenChange }: NotificationsDialogProps) =
     }
   };
 
+  const handleFriendRequest = async (action: 'accept' | 'decline', friendRequestId: string, fromUserId: string) => {
+    if (!user) return;
+    
+    try {
+      if (action === 'accept') {
+        // Update friend request status to accepted
+        const { error: updateError } = await supabase
+          .from('friends')
+          .update({ status: 'accepted' })
+          .eq('id', friendRequestId);
+
+        if (updateError) throw updateError;
+        
+        toast.success('Friend request accepted!');
+      } else {
+        // Delete the friend request
+        const { error: deleteError } = await supabase
+          .from('friends')
+          .delete()
+          .eq('id', friendRequestId);
+
+        if (deleteError) throw deleteError;
+        
+        toast.success('Friend request declined');
+      }
+
+      // Mark the notification as read
+      await markNotificationAsRead(friendRequestId);
+      
+      // Refresh notifications and update parent
+      await fetchNotifications();
+      onUpdate?.();
+    } catch (error) {
+      toast.error(`Error ${action}ing friend request`);
+    }
+  };
+
+  const markNotificationAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
   const markAllAsRead = async () => {
     if (!user) return;
     
@@ -71,6 +122,7 @@ const NotificationsDialog = ({ open, onOpenChange }: NotificationsDialogProps) =
       
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       toast.success('All notifications marked as read');
+      onUpdate?.();
     } catch (error) {
       toast.error('Error updating notifications');
     } finally {
@@ -90,9 +142,48 @@ const NotificationsDialog = ({ open, onOpenChange }: NotificationsDialogProps) =
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       );
+      onUpdate?.();
     } catch (error) {
       toast.error('Error updating notification');
     }
+  };
+
+  const renderNotificationActions = (notification: Notification) => {
+    if (notification.type === 'friend_request' && !notification.is_read) {
+      const friendRequestId = notification.data?.friend_request_id;
+      const fromUserId = notification.data?.from_user_id;
+      
+      if (friendRequestId && fromUserId) {
+        return (
+          <div className="flex space-x-2 mt-3">
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFriendRequest('accept', friendRequestId, fromUserId);
+              }}
+              className="flex-1"
+            >
+              <Check size={14} className="mr-1" />
+              Accept
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFriendRequest('decline', friendRequestId, fromUserId);
+              }}
+              className="flex-1"
+            >
+              <X size={14} className="mr-1" />
+              Decline
+            </Button>
+          </div>
+        );
+      }
+    }
+    return null;
   };
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -143,7 +234,10 @@ const NotificationsDialog = ({ open, onOpenChange }: NotificationsDialogProps) =
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between">
-                    <h4 className="font-medium text-slate">{notification.title}</h4>
+                    <div className="flex items-center space-x-2">
+                      {notification.type === 'friend_request' && <Users size={16} className="text-primary" />}
+                      <h4 className="font-medium text-slate">{notification.title}</h4>
+                    </div>
                     {!notification.is_read && (
                       <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2" />
                     )}
@@ -152,6 +246,7 @@ const NotificationsDialog = ({ open, onOpenChange }: NotificationsDialogProps) =
                   <p className="text-xs text-muted-foreground">
                     {new Date(notification.created_at).toLocaleString()}
                   </p>
+                  {renderNotificationActions(notification)}
                 </div>
               </Card>
             ))
