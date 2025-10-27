@@ -11,6 +11,7 @@ interface CallDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   callType: 'audio' | 'video';
+  preSelectedFriendId?: string;
 }
 
 interface Friend {
@@ -22,7 +23,7 @@ interface Friend {
   };
 }
 
-const CallDialog: React.FC<CallDialogProps> = ({ open, onOpenChange, callType }) => {
+const CallDialog: React.FC<CallDialogProps> = ({ open, onOpenChange, callType, preSelectedFriendId }) => {
   const { user } = useAuth();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
@@ -33,6 +34,12 @@ const CallDialog: React.FC<CallDialogProps> = ({ open, onOpenChange, callType })
       fetchFriends();
     }
   }, [open, user]);
+
+  useEffect(() => {
+    if (preSelectedFriendId) {
+      setSelectedFriends([preSelectedFriendId]);
+    }
+  }, [preSelectedFriendId]);
 
   const fetchFriends = async () => {
     if (!user?.id) return;

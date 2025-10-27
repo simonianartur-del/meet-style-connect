@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, UserPlus, MapPin, Users } from 'lucide-react';
+import { Search, UserPlus, MapPin, Users, Phone, Video } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { mockFriends } from '@/data/mockData';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import AddFriendDialog from '@/components/dialogs/AddFriendDialog';
+import CallDialog from '@/components/dialogs/CallDialog';
 
 const Friends = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [addFriendOpen, setAddFriendOpen] = useState(false);
+  const [callDialogOpen, setCallDialogOpen] = useState(false);
+  const [callType, setCallType] = useState<'audio' | 'video'>('audio');
+  const [preSelectedFriendId, setPreSelectedFriendId] = useState<string | undefined>();
 
   const filteredFriends = mockFriends.filter(friend =>
     friend.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleCall = (friendId: string, type: 'audio' | 'video', e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click navigation
+    setCallType(type);
+    setPreSelectedFriendId(friendId);
+    setCallDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen pb-20">
@@ -98,6 +109,28 @@ const Friends = () => {
                       <span>•</span>
                       <span>{friend.meetupsCount} meetups</span>
                     </div>
+
+                    {/* Call Buttons */}
+                    <div className="flex items-center space-x-2 mt-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={(e) => handleCall(friend.id, 'audio', e)}
+                      >
+                        <Phone size={14} className="mr-1" />
+                        Audio
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={(e) => handleCall(friend.id, 'video', e)}
+                      >
+                        <Video size={14} className="mr-1" />
+                        Video
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Action Indicator */}
@@ -116,6 +149,13 @@ const Friends = () => {
       <AddFriendDialog 
         open={addFriendOpen}
         onOpenChange={setAddFriendOpen}
+      />
+
+      <CallDialog
+        open={callDialogOpen}
+        onOpenChange={setCallDialogOpen}
+        callType={callType}
+        preSelectedFriendId={preSelectedFriendId}
       />
     </div>
   );
