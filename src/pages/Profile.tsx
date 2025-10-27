@@ -210,34 +210,32 @@ const Profile = () => {
                 {friendButtonContent.text}
               </Button>
               
-              {friendStatus === 'friends' && (
-                <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
-                    className="btn-ghost flex-1"
-                    onClick={() => toast.info('Audio call feature coming soon!')}
-                  >
-                    <Phone size={16} className="mr-2" />
-                    Audio
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="btn-ghost flex-1"
-                    onClick={() => toast.info('Video call feature coming soon!')}
-                  >
-                    <Video size={16} className="mr-2" />
-                    Video
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="btn-ghost flex-1"
-                    onClick={() => handleMessage(user.id)}
-                  >
-                    <MessageCircle size={16} className="mr-2" />
-                    Message
-                  </Button>
-                </div>
-              )}
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  className="btn-ghost flex-1"
+                  onClick={() => toast.info('Audio call feature coming soon!')}
+                >
+                  <Phone size={16} className="mr-2" />
+                  Audio
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="btn-ghost flex-1"
+                  onClick={() => toast.info('Video call feature coming soon!')}
+                >
+                  <Video size={16} className="mr-2" />
+                  Video
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="btn-ghost flex-1"
+                  onClick={() => handleMessage(user.id)}
+                >
+                  <MessageCircle size={16} className="mr-2" />
+                  Message
+                </Button>
+              </div>
             </div>
           )}
         </div>
