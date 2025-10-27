@@ -8,6 +8,7 @@ import StatCard from '@/components/ui/StatCard';
 import QuickAction from '@/components/ui/QuickAction';
 import { mockMeetups, mockUserMedia, mockFriends } from '@/data/mockData';
 import { toast } from 'sonner';
+import CallDialog from '@/components/dialogs/CallDialog';
 
 const Dashboard = () => {
   const { t } = useLanguage();
@@ -19,6 +20,8 @@ const Dashboard = () => {
     meetupsCount: 0,
     photosCount: 0
   });
+  const [callDialogOpen, setCallDialogOpen] = useState(false);
+  const [callType, setCallType] = useState<'audio' | 'video'>('audio');
 
   useEffect(() => {
     if (user) {
@@ -159,28 +162,20 @@ const Dashboard = () => {
               <QuickAction
                 title="Audio Call"
                 icon={Phone}
-                onClick={() => toast.info('Audio call feature coming soon!')}
+                onClick={() => {
+                  setCallType('audio');
+                  setCallDialogOpen(true);
+                }}
                 variant="secondary"
               />
               <QuickAction
                 title="Video Call"
                 icon={Video}
-                onClick={() => toast.info('Video call feature coming soon!')}
+                onClick={() => {
+                  setCallType('video');
+                  setCallDialogOpen(true);
+                }}
                 variant="secondary"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <QuickAction
-                title="Group Audio"
-                icon={Phone}
-                onClick={() => toast.info('Group audio call feature coming soon!')}
-                variant="accent"
-              />
-              <QuickAction
-                title="Group Video"
-                icon={Video}
-                onClick={() => toast.info('Group video call feature coming soon!')}
-                variant="accent"
               />
             </div>
           </div>
@@ -275,6 +270,12 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      <CallDialog
+        open={callDialogOpen}
+        onOpenChange={setCallDialogOpen}
+        callType={callType}
+      />
     </div>
   );
 };
