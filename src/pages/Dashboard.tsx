@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Calendar, Image, Plus, UserPlus, Upload, Clock, Activity } from 'lucide-react';
+import { Users, Calendar, Image, Plus, UserPlus, Upload, Clock, Activity, Phone, Video } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import StatCard from '@/components/ui/StatCard';
 import QuickAction from '@/components/ui/QuickAction';
 import { mockMeetups, mockUserMedia, mockFriends } from '@/data/mockData';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { t } = useLanguage();
@@ -151,6 +152,34 @@ const Dashboard = () => {
                 title={t('dashboard.uploadPhoto')}
                 icon={Upload}
                 onClick={() => navigate('/gallery')}
+                variant="accent"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <QuickAction
+                title="Audio Call"
+                icon={Phone}
+                onClick={() => toast.info('Audio call feature coming soon!')}
+                variant="secondary"
+              />
+              <QuickAction
+                title="Video Call"
+                icon={Video}
+                onClick={() => toast.info('Video call feature coming soon!')}
+                variant="secondary"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <QuickAction
+                title="Group Audio"
+                icon={Phone}
+                onClick={() => toast.info('Group audio call feature coming soon!')}
+                variant="accent"
+              />
+              <QuickAction
+                title="Group Video"
+                icon={Video}
+                onClick={() => toast.info('Group video call feature coming soon!')}
                 variant="accent"
               />
             </div>
