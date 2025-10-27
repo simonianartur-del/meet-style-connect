@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid, MessageCircle, UserMinus, UserPlus, UserCheck } from 'lucide-react';
+import { Edit, MapPin, Calendar, Camera, Users, Heart, Grid, MessageCircle, UserMinus, UserPlus, UserCheck, Phone, Video } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -200,23 +200,44 @@ const Profile = () => {
               {t('profile.edit')}
             </Button>
           ) : (
-            <div className="flex space-x-3">
+            <div className="space-y-3">
               <Button 
-                className="btn-premium flex-1"
+                className="btn-premium w-full"
                 onClick={handleFriendAction}
                 disabled={friendLoading || friendStatus === 'pending_sent'}
               >
                 <friendButtonContent.icon size={18} className="mr-2" />
                 {friendButtonContent.text}
               </Button>
-              <Button 
-                variant="outline" 
-                className="btn-ghost"
-                onClick={() => handleMessage(user.id)}
-              >
-                <MessageCircle size={16} className="mr-2" />
-                Message
-              </Button>
+              
+              {friendStatus === 'friends' && (
+                <div className="flex space-x-3">
+                  <Button 
+                    variant="outline" 
+                    className="btn-ghost flex-1"
+                    onClick={() => toast.info('Audio call feature coming soon!')}
+                  >
+                    <Phone size={16} className="mr-2" />
+                    Audio
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="btn-ghost flex-1"
+                    onClick={() => toast.info('Video call feature coming soon!')}
+                  >
+                    <Video size={16} className="mr-2" />
+                    Video
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="btn-ghost flex-1"
+                    onClick={() => handleMessage(user.id)}
+                  >
+                    <MessageCircle size={16} className="mr-2" />
+                    Message
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
