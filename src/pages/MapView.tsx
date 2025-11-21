@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { MapPin, Users, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Map from '@/components/Map';
+import { locationSchema } from '@/lib/validationSchemas';
 
 interface UserLocation {
   id: string;
@@ -94,13 +95,22 @@ const MapView = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        setUserLocation({ lng: longitude, lat: latitude });
+        
+        // Validate location coordinates
+        const validationResult = locationSchema.safeParse({ latitude, longitude });
+        
+        if (!validationResult.success) {
+          toast.error('Invalid location coordinates');
+          return;
+        }
+
+        setUserLocation({ lng: validationResult.data.longitude, lat: validationResult.data.latitude });
         
         try {
           const { error } = await supabase
             .from('profiles')
             .update({
-              location: `(${longitude}, ${latitude})`,
+              location: `(${validationResult.data.longitude}, ${validationResult.data.latitude})`,
               location_enabled: true
             })
             .eq('id', user?.id);

@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Heart, MessageCircle, Share, User, Send, Image, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { postSchema, commentSchema } from '@/lib/validationSchemas';
 
 interface Post {
   id: string;
@@ -119,27 +120,48 @@ const Wall = () => {
   };
 
   const createPost = async () => {
-    if ((!newPost.trim() && !selectedImage) || !user) return;
+    if (!user) return;
 
     setUploading(true);
     try {
       let mediaUrl = null;
       
       if (selectedImage) {
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024;
+        if (selectedImage.size > maxSize) {
+          toast.error('Image must be less than 5MB');
+          setUploading(false);
+          return;
+        }
+
         mediaUrl = await uploadImage(selectedImage);
         if (!mediaUrl) {
           toast.error('Failed to upload image');
+          setUploading(false);
           return;
         }
+      }
+
+      // Validate post data
+      const validationResult = postSchema.safeParse({
+        content: newPost || '',
+        media_url: mediaUrl
+      });
+
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        setUploading(false);
+        return;
       }
 
       const { error } = await supabase
         .from('posts')
         .insert({
-          content: newPost,
+          content: validationResult.data.content,
           user_id: user.id,
           is_private: false,
-          media_url: mediaUrl
+          media_url: validationResult.data.media_url
         });
 
       if (error) throw error;
@@ -195,14 +217,24 @@ const Wall = () => {
   };
 
   const addComment = async (postId: string) => {
-    const content = newComment[postId]?.trim();
-    if (!content || !user) return;
+    const content = newComment[postId];
+    if (!user) return;
 
     try {
+      // Validate comment data
+      const validationResult = commentSchema.safeParse({
+        content
+      });
+
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        return;
+      }
+
       const { error } = await supabase
         .from('comments')
         .insert({
-          content,
+          content: validationResult.data.content,
           user_id: user.id,
           post_id: postId
         });
