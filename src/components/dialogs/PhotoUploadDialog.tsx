@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Upload, Image } from 'lucide-react';
 import { toast } from 'sonner';
+import { mediaCaptionSchema } from '@/lib/validationSchemas';
 
 interface PhotoUploadDialogProps {
   open: boolean;
@@ -46,6 +47,22 @@ const PhotoUploadDialog = ({ open, onOpenChange, onPhotoUploaded, isProfilePhoto
 
   const uploadPhoto = async () => {
     if (!file || !user) return;
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    // Validate caption if provided
+    if (!isProfilePhoto && caption) {
+      const validationResult = mediaCaptionSchema.safeParse({ caption });
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        return;
+      }
+    }
     
     setLoading(true);
     try {

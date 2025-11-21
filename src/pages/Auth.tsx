@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { signupSchema, loginSchema } from '@/lib/validationSchemas';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -43,6 +44,18 @@ const Auth = () => {
 
     try {
       if (isLogin) {
+        // Validate login data
+        const validationResult = loginSchema.safeParse({
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (!validationResult.success) {
+          toast.error(validationResult.error.errors[0].message);
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password
@@ -55,6 +68,20 @@ const Auth = () => {
           navigate('/');
         }
       } else {
+        // Validate signup data
+        const validationResult = signupSchema.safeParse({
+          email: formData.email,
+          password: formData.password,
+          username: formData.username,
+          displayName: formData.displayName
+        });
+
+        if (!validationResult.success) {
+          toast.error(validationResult.error.errors[0].message);
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
