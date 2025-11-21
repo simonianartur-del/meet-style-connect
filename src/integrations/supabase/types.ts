@@ -468,7 +468,7 @@ export type Database = {
           display_name: string | null
           friends_private: boolean | null
           id: string
-          location: unknown | null
+          location: unknown
           location_enabled: boolean | null
           photos_private: boolean | null
           posts_private: boolean | null
@@ -482,7 +482,7 @@ export type Database = {
           display_name?: string | null
           friends_private?: boolean | null
           id: string
-          location?: unknown | null
+          location?: unknown
           location_enabled?: boolean | null
           photos_private?: boolean | null
           posts_private?: boolean | null
@@ -496,7 +496,7 @@ export type Database = {
           display_name?: string | null
           friends_private?: boolean | null
           id?: string
-          location?: unknown | null
+          location?: unknown
           location_enabled?: boolean | null
           photos_private?: boolean | null
           posts_private?: boolean | null
